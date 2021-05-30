@@ -6,6 +6,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import 'impl.dart';
 
+/// EasyWebView implementation
 class EasyWebView extends StatefulWidget implements EasyWebViewImpl {
   const EasyWebView({
     required this.src,
@@ -75,6 +76,7 @@ class _EasyWebViewState extends State<EasyWebView> {
     if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
   }
 
+  /// Any changes made are updated via setState method
   @override
   void didUpdateWidget(EasyWebView oldWidget) {
     if (oldWidget.src != widget.src) {

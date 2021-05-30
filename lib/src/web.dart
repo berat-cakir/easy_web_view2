@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import 'impl.dart';
 
+/// EasyWebView implementation
 class EasyWebView extends StatefulWidget implements EasyWebViewImpl {
   const EasyWebView({
     Key? key,
@@ -78,6 +79,7 @@ class _EasyWebViewState extends State<EasyWebView> {
     super.initState();
   }
 
+  /// Any changes made are updated via setState method
   @override
   void didUpdateWidget(EasyWebView oldWidget) {
     if (oldWidget.height != widget.height) {
