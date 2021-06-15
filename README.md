@@ -1,3 +1,5 @@
+!!! Temporary solution for adding null safety and updated packages. Please switch back to https://pub.dev/packages/easy_web_view once Rody updates his plugin !!!
+
 # easy_web_view2
 
 Easy Web Views in Flutter on Web and Mobile!
