@@ -70,31 +70,13 @@ class _EasyWebViewState extends State<EasyWebView> {
   @override
   void initState() {
     widget.onLoaded();
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final _iframe = _iframeElementMap[widget.key];
       _iframe?.onLoad.listen((event) {
         widget.onLoaded();
       });
     });
     super.initState();
-  }
-
-  /// Any changes made are updated via setState method
-  @override
-  void didUpdateWidget(EasyWebView oldWidget) {
-    if (oldWidget.height != widget.height) {
-      if (mounted) setState(() {});
-    }
-    if (oldWidget.width != widget.width) {
-      if (mounted) setState(() {});
-    }
-    if (oldWidget.src != widget.src) {
-      if (mounted) setState(() {});
-    }
-    if (oldWidget.headers != widget.headers) {
-      if (mounted) setState(() {});
-    }
-    super.didUpdateWidget(oldWidget);
   }
 
   @override
