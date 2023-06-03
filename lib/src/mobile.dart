@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:easy_web_view2/easy_web_view2.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -71,24 +69,47 @@ class _EasyWebViewState extends State<EasyWebView> {
   @override
   void initState() {
     super.initState();
+    _webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(
+        Uri.parse(_updateUrl(widget.src)),
+        headers: widget.headers,
+      );
 
-    // Enable hybrid composition.
-    if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
+    if (widget.crossWindowEvents.isNotEmpty) {
+      for (final windowEvent in widget.crossWindowEvents.toSet()) {
+        _webViewController.addJavaScriptChannel(
+          windowEvent.name,
+          onMessageReceived: (javascriptMessage) =>
+              windowEvent.eventAction(javascriptMessage.message),
+        );
+      }
+    }
+
+    _webViewController.setNavigationDelegate(
+      NavigationDelegate(onNavigationRequest: (navigationRequest) async {
+        if (widget.webNavigationDelegate == null) {
+          return NavigationDecision.navigate;
+        }
+
+        final webNavigationDecision = await widget.webNavigationDelegate!(
+            WebNavigationRequest(navigationRequest.url));
+        return (webNavigationDecision == WebNavigationDecision.prevent)
+            ? NavigationDecision.prevent
+            : NavigationDecision.navigate;
+      }),
+    );
   }
 
-  /// Any changes made are updated via setState method
   @override
   void didUpdateWidget(EasyWebView oldWidget) {
     if (oldWidget.src != widget.src) {
-      _webViewController.loadUrl(_updateUrl(widget.src),
-          headers: widget.headers);
+      _webViewController.loadRequest(
+        Uri.parse(_updateUrl(widget.src)),
+        headers: widget.headers,
+      );
     }
-    if (oldWidget.height != widget.height) {
-      if (mounted) setState(() {});
-    }
-    if (oldWidget.width != widget.width) {
-      if (mounted) setState(() {});
-    }
+
     super.didUpdateWidget(oldWidget);
   }
 
@@ -134,36 +155,10 @@ class _EasyWebViewState extends State<EasyWebView> {
             isSelectable: widget.widgetsTextSelectable,
           );
         }
-        return WebView(
-          key: widget.key,
-          initialUrl: _updateUrl(src),
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (webViewController) {
-            _webViewController = webViewController;
-            widget.onLoaded();
-          },
-          navigationDelegate: (navigationRequest) async {
-            if (widget.webNavigationDelegate == null) {
-              return NavigationDecision.navigate;
-            }
 
-            final webNavigationDecision = await widget.webNavigationDelegate!(
-                WebNavigationRequest(navigationRequest.url));
-            return (webNavigationDecision == WebNavigationDecision.prevent)
-                ? NavigationDecision.prevent
-                : NavigationDecision.navigate;
-          },
-          javascriptChannels: widget.crossWindowEvents.isNotEmpty
-              ? widget.crossWindowEvents
-                  .map(
-                    (crossWindowEvent) => JavascriptChannel(
-                      name: crossWindowEvent.name,
-                      onMessageReceived: (javascriptMessage) => crossWindowEvent
-                          .eventAction(javascriptMessage.message),
-                    ),
-                  )
-                  .toSet()
-              : Set<JavascriptChannel>(),
+        return WebViewWidget(
+          key: widget.key,
+          controller: _webViewController,
         );
       },
     );
